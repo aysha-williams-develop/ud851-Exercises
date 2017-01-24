@@ -15,6 +15,7 @@
  */
 package com.example.android.datafrominternet;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import com.example.android.datafrominternet.utilities.NetworkUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,21 +56,37 @@ public class MainActivity extends AppCompatActivity {
      */
     private void makeGithubSearchQuery() {
         String githubQuery = mSearchBoxEditText.getText().toString();
-        URL githubSearchUrl = NetworkUtils.buildUrl(githubQuery);
+        URL githubSearchUrl = NetworkUtils.buildUrl(githubQuery.toString());
         mUrlDisplayTextView.setText(githubSearchUrl.toString());
-        String githubSearchResults = null;
-        try {
-            githubSearchResults = NetworkUtils.getResponseFromHttpUrl(githubSearchUrl);
-            mSearchResultsTextView.setText(githubSearchResults);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        GithubQueryTask queryTask = new GithubQueryTask();
+        queryTask.execute(githubSearchUrl);
+
         // TODO (4) Create a new GithubQueryTask and call its execute method, passing in the url to query
     }
 
     // TODO (1) Create a class called GithubQueryTask that extends AsyncTask<URL, Void, String>
-    // TODO (2) Override the doInBackground method to perform the query. Return the results. (Hint: You've already written the code to perform the query)
+    // TODO (2) Override the doInBackground method to perform the query. Return the results.
+    // (Hint: You've already written the code to perform the query)
     // TODO (3) Override onPostExecute to display the results in the TextView
+    public class GithubQueryTask extends AsyncTask<URL, Void, String> {
+        @Override
+        protected String doInBackground(URL... urls) {
+            String githubSearchResults = null;
+            try {
+                githubSearchResults = NetworkUtils.getResponseFromHttpUrl(urls[0]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return githubSearchResults;
+        }
+
+        @Override
+        protected void onPostExecute(String githubSearchResults) {
+//            super.onPostExecute(s);
+            mSearchResultsTextView.setText(githubSearchResults);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
